@@ -1,48 +1,103 @@
-class TicTacToe:
-    def __init__(self):
-        self.board = [" " for _ in range(9)]
-        self.current_player = "X"
+import math
 
-    def print_board(self):
-        for i in range(0, 9, 3):
-            print(" | ".join(self.board[i:i+3]))
-            if i < 6:
-                print("-" * 9)
+def print_board(board):
+    for row in board:
+        print(" | ".join(row))
+        print("-" * 9)
 
-    def make_move(self, position):
-        if self.board[position] == " ":
-            self.board[position] = self.current_player
-            self.current_player = "O" if self.current_player == "X" else "X"
+def check_winner(board, player):
+    for i in range(3):
+        if all(board[i][j] == player for j in range(3)) or all(board[j][i] == player for j in range(3)):
+            return True
+    if all(board[i][i] == player for i in range(3)) or all(board[i][2 - i] == player for i in range(3)):
+        return True
+    return False
+
+def is_full(board):
+    return all(cell != ' ' for row in board for cell in row)
+
+def minimax(board, depth, is_maximizing):
+    scores = {
+        'X': -1,
+        'O': 1,
+        'tie': 0
+    }
+    
+    if check_winner(board, 'O'):
+        return scores['O']
+    if check_winner(board, 'X'):
+        return scores['X']
+    if is_full(board):
+        return scores['tie']
+
+    if is_maximizing:
+        max_eval = -math.inf
+        for i in range(3):
+            for j in range(3):
+                if board[i][j] == ' ':
+                    board[i][j] = 'O'
+                    eval = minimax(board, depth + 1, False)
+                    board[i][j] = ' '
+                    max_eval = max(eval, max_eval)
+        return max_eval
+    else:
+        min_eval = math.inf
+        for i in range(3):
+            for j in range(3):
+                if board[i][j] == ' ':
+                    board[i][j] = 'X'
+                    eval = minimax(board, depth + 1, True)
+                    board[i][j] = ' '
+                    min_eval = min(eval, min_eval)
+        return min_eval
+
+def best_move(board):
+    best_eval = -math.inf
+    best_move = (-1, -1)
+
+    for i in range(3):
+        for j in range(3):
+            if board[i][j] == ' ':
+                board[i][j] = 'O'
+                eval = minimax(board, 0, False)
+                board[i][j] = ' '
+                if eval > best_eval:
+                    best_eval = eval
+                    best_move = (i, j)
+
+    return best_move
+
+def main():
+    board = [[' ' for _ in range(3)] for _ in range(3)]
+    print_board(board)
+
+    while True:
+        row, col = map(int, input("Enter row and column (0-2 separated by space): ").split())
+        if board[row][col] == ' ':
+            board[row][col] = 'X
         else:
-            print("Invalid move. Try again.")
+            print("That cell is already occupied. Try again.")
+            continue
 
-    def check_win(self):
-        win_patterns = [(0, 1, 2), (3, 4, 5), (6, 7, 8), (0, 3, 6), (1, 4, 7), (2, 5, 8), (0, 4, 8), (2, 4, 6)]
-        for pattern in win_patterns:
-            if self.board[pattern[0]] == self.board[pattern[1]] == self.board[pattern[2]] != " ":
-                return True
-        return False
+        print_board(board)
 
-    def check_draw(self):
-        return " " not in self.board
+        if check_winner(board, 'X'):
+            print("You win!")
+            break
+        elif is_full(board):
+            print("It's a tie!")
+            break
 
-    def play_game(self):
-        while True:
-            self.print_board()
-            move = int(input(f"Player {self.current_player}, enter your move (0-8): "))
-            if 0 <= move <= 8:
-                self.make_move(move)
-                if self.check_win():
-                    self.print_board()
-                    print(f"Player {self.current_player} wins!")
-                    break
-                if self.check_draw():
-                    self.print_board()
-                    print("It's a draw!")
-                    break
-            else:
-                print("Invalid input. Enter a number between 0 and 8.")
+        row, col = best_move(board)
+        board[row][col] = 'O'
+        print_board(board)
+
+        if check_winner(board, 'O'):
+            print("AI wins!")
+            break
+        elif is_full(board):
+            print("It's a tie!")
+            break
 
 if __name__ == "__main__":
-    game = TicTacToe()
-    game.play_game()
+    main()
