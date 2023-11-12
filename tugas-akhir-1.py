@@ -148,11 +148,8 @@ while running:
     elif check_draw():
         print("Permainan Seri!")
         running = False
-    
+
     pygame.display.update()
-# Tampilkan pop-up konfirmasi main lagi
-    user_response = input("Apakah Anda ingin bermain lagi? (y/n): ")
-    if user_response.lower() != 'y':
-        break
+
 pygame.quit()
 sys.exit()
